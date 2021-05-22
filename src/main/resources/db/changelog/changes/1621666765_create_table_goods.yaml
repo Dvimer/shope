@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1621601455
+      author: nosov
+      comment: Create goods table
+      changes:
+        - sql:
+            comment: create ltree
+            sql: CREATE EXTENSION IF NOT EXISTS ltree
+        - createTable:
+            tableName: goods
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: store_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_goods_store
+                    references: goods(id)
+              - column:
+                  name: path
+                  type: ltree
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: int
+                  constraints:
+                    nullable: false

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,9 +22,9 @@ public class BuildingMarketController {
     @RequestMapping(value = "/calc",
             produces = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.POST)
-    ResponseEntity<List<ItemsModel>> calc(@RequestBody ThreeRequest request) throws IOException {
+    ResponseEntity<ItemsModel> calc(@RequestBody ThreeRequest request) throws IOException {
 
-        List<ItemsModel> itemsModels = goodsService.findGoodsThree(request.getId_tree(), request.getProp());
+        ItemsModel itemsModels = goodsService.findGoodsThree(request.getId_tree(), request.getProp());
         return ResponseEntity.ok(itemsModels);
     }
 }

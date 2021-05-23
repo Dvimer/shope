@@ -1,36 +1,29 @@
 package com.dvimer.buildmarket;
 
-import com.github.javafaker.Faker;
+import com.dvimer.buildmarket.utils.HelpData;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Random;
 
 /**
  * Утилитный класс для создания файлов для тестов, чтобы руками рандомные номера не писать
  */
-public class CreateTestFileUtil {
-    private static final String NEW_FILE_NAME = "goods.sql";
-    public static final String BASE_FILE_PATH = "src/test/resources/";
-    private static final Random RANDOM = new Random();
-    private static Faker faker = new Faker();
+public class CreateTestFileUtil implements HelpData {
 
     public static void main(String[] args) {
         try (PrintWriter file = new PrintWriter(BASE_FILE_PATH + NEW_FILE_NAME)) {
-
             for (int i = 1; i <= 20; i++) {
                 for (int j = 0; j < 20; j++) {
-                    String type = faker.pokemon().name();
+                    String type = types.get(RANDOM.nextInt(types.size()));
                     for (int k = 0; k < 20; k++) {
-                        String category = faker.cat().name();
+                        String category = categories.get(RANDOM.nextInt(categories.size()));
                         for (int l = 0; l < 20; l++) {
-                            String size = faker.color().name();
-                            for (int m = 0; m < 5000; m++) {
+                            String size = sizes.get(RANDOM.nextInt(sizes.size()));
+                            for (int m = 0; m < 1; m++) {
                                 file.println(generateSql(i, type, category, size));
                             }
                         }
                     }
-
                 }
             }
 
@@ -57,7 +50,7 @@ public class CreateTestFileUtil {
     }
 
     private static String generatePath(String type, String category, String size) {
-        String prePath = type + "." + category + "." + size + "." + faker.food().ingredient();
+        String prePath = type + "." + category + "." + size + "." + names.get(RANDOM.nextInt(names.size()));
         return prePath.replaceAll(" ", "_").replaceAll("'", "");
     }
 }

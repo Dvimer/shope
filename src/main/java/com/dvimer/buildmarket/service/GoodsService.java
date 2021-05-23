@@ -1,19 +1,22 @@
 package com.dvimer.buildmarket.service;
 
 import com.dvimer.buildmarket.controller.model.ItemsModel;
-import com.dvimer.buildmarket.dao.helpers.PathAmount;
 import com.dvimer.buildmarket.dao.entity.StoreEntity;
+import com.dvimer.buildmarket.dao.helpers.PathAmount;
 import com.dvimer.buildmarket.dao.repository.GoodsRepository;
 import com.dvimer.buildmarket.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StopWatch;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GoodsService {
     private final StoreService storeService;
     private final GoodsRepository goodsRepository;
@@ -21,8 +24,8 @@ public class GoodsService {
     private final String PURCHASE_PRICE = "цена закупки";
     private final String DELIVERY_PRICE = "стоимость поставки";
     private final String INSTALLATION_PRICE = "стоимость монтажа";
-
-    public List<ItemsModel> findGoodsThree(Long id, String property) {
+    
+    public ItemsModel findGoodsThree(Long id, String property) {
         StoreEntity store = storeService.findById(id);
 
         List<PathAmount> allByType;
@@ -33,6 +36,8 @@ public class GoodsService {
         if (Strings.isEmpty(property))
             throw new BadRequestException("Обязательно указывать название паремтра стоимости");
 //todo перенести в спецификации
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         if (DELIVERY_PRICE.equalsIgnoreCase(property)) {
             allByType = goodsRepository.findAllByTypeAndDeliveryPrice(store.getId());
             allByCategory = goodsRepository.findAllByCategoryAndDeliveryPrice(store.getId());
@@ -52,58 +57,64 @@ public class GoodsService {
             throw new BadRequestException("Мы не можем искать по текущему параметру={}", property);
         }
 
+        stopWatch.stop();
+        log.info("Данные из базы получены за ={}", stopWatch.getTotalTimeSeconds());
+
+        StopWatch stopWatchName = new StopWatch();
+        stopWatchName.start();
         List<ItemsModel> names = allByName.stream()
-                .map(p -> ItemsModel.builder()
-                        .name(p.getSubpath())
-                        .path(subName(p))
-                        .value(p.getSum())
-                        .prop(property)
-                        .items(null)
-                        .build())
+                .map(p -> getItem(property, p.getSum(), subName(p), p.getSubpath(), null))
                 .collect(Collectors.toList());
+        stopWatchName.stop();
+        log.info("Данные имен смаплены за ={},количество={}", stopWatchName.getTotalTimeSeconds(), names.size());
 
-
+        StopWatch stopWatchSize = new StopWatch();
+        stopWatchSize.start();
         List<ItemsModel> sizes = allBySize.stream()
-                .map(size -> ItemsModel.builder()
-                        .name(subName(size))
-                        .path(size.getSubpath())
-                        .value(size.getSum())
-                        .prop(property)
-                        .items(getItemsByType(names, size))
-                        .build())
+                .map(size -> getItem(property, size.getSum(), subName(size), size.getSubpath(), getItemsByType(names, size)))
                 .collect(Collectors.toList());
+        stopWatchSize.stop();
+        log.info("Данные размеров смаплены за ={},количество={}", stopWatchSize.getTotalTimeSeconds(), sizes.size());
 
+        StopWatch stopWatchCat = new StopWatch();
+        stopWatchCat.start();
         List<ItemsModel> categories = allByCategory
                 .stream()
-                .map(cat -> ItemsModel.builder()
-                        .name(subName(cat))
-                        .path(cat.getSubpath())
-                        .value(cat.getSum())
-                        .prop(property)
-                        .items(getItemsByType(sizes, cat))
-                        .build())
+                .map(cat -> getItem(property, cat.getSum(), subName(cat), cat.getSubpath(), getItemsByType(sizes, cat)))
                 .collect(Collectors.toList());
+        stopWatchCat.stop();
+        log.info("Данные категорий смаплены за ={},количество={}", stopWatchCat.getTotalTimeSeconds(), categories.size());
+
+        StopWatch stopWatchType = new StopWatch();
+        stopWatchType.start();
+        List<ItemsModel> types = allByType.stream()
+                .map(type -> getItem(property, type.getSum(), type.getSubpath(), type.getSubpath(), getItemsByType(categories, type)))
+                .collect(Collectors.toList());
+        stopWatchType.stop();
+        log.info("Данные типов смаплены за ={},количество={}", stopWatchType.getTotalTimeSeconds(), types.size());
 
 
-        return allByType.stream()
-                .map(type -> ItemsModel.builder()
-                        .name(type.getSubpath())
-                        .path(type.getSubpath())
-                        .value(type.getSum())
-                        .prop(property)
-                        .items(getItemsByType(categories, type))
-                        .build())
-                .collect(Collectors.toList());
+        Long totalSum = allByType.stream().map(PathAmount::getSum).reduce(Long::sum).get();
+        return getItem(property, totalSum, store.getName(), null, types);
+    }
+
+    private ItemsModel getItem(String property, Long sum, String s, String subpath, List<ItemsModel> itemsByType) {
+        return ItemsModel.builder()
+                .name(s)
+                .path(subpath)
+                .value(sum)
+                .prop(property)
+                .items(itemsByType)
+                .build();
     }
 
     private String subName(PathAmount p) {
         return p.getSubpath().substring(p.getSubpath().lastIndexOf(".") + 1);
     }
-
+//// TODO: 23.05.2021 самое узкое место данный мапинг на 8000 имен и 3000 категории работает 40 секунд 
     private List<ItemsModel> getItemsByType(List<ItemsModel> itemsModels, PathAmount type) {
         return itemsModels.stream()
                 .filter(item -> item.getPath().contains(type.getSubpath()))
                 .collect(Collectors.toList());
     }
-
 }

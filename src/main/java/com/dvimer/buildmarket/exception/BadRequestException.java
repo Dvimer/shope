@@ -1,7 +1,4 @@
-package com.dvimer.buildmarket;
-
-import lombok.Getter;
-import lombok.ToString;
+package com.dvimer.buildmarket.exception;
 
 public class BadRequestException extends RuntimeException {
     public static final int DEFAULT_HTTP_STATUS = 400;

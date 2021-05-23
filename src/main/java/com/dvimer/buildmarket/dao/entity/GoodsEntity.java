@@ -10,7 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.math.BigDecimal;
 
 @Data
 @SuperBuilder
@@ -26,5 +25,9 @@ public class GoodsEntity extends BaseEntity {
 
     private String path;
 
-    private BigDecimal amount;
+    private Integer purchasePrice;
+
+    private Integer installationPrice;
+
+    private Integer deliveryPrice;
 }

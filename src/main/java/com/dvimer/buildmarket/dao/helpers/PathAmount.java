@@ -1,4 +1,4 @@
-package com.dvimer.buildmarket.dao.entity;
+package com.dvimer.buildmarket.dao.helpers;
 
 public interface PathAmount {
     String getSubpath();

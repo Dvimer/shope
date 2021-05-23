@@ -23,14 +23,24 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     foreignKeyName: fk_goods_store
-                    references: goods(id)
+                    references: store(id)
               - column:
                   name: path
                   type: ltree
                   constraints:
                     nullable: false
               - column:
-                  name: amount
+                  name: purchase_price
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: delivery_price
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: installation_price
                   type: int
                   constraints:
                     nullable: false

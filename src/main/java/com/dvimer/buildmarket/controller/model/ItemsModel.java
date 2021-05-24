@@ -3,14 +3,13 @@ package com.dvimer.buildmarket.controller.model;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
 public class ItemsModel {
     private String name;
-    private String path;
     private String prop;
     private Long value;
-    private List<ItemsModel> items;
+    private Map<String, ItemsModel> items;
 }

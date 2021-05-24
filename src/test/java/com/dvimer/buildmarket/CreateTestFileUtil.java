@@ -9,6 +9,7 @@ import java.io.PrintWriter;
  * Утилитный класс для создания файлов для тестов, чтобы руками рандомные номера не писать
  */
 public class CreateTestFileUtil implements HelpData {
+    private static final Integer COUNT_GOODS_IN_EVERY_SIZE = 10;
 
     public static void main(String[] args) {
         try (PrintWriter file = new PrintWriter(BASE_FILE_PATH + NEW_FILE_NAME)) {
@@ -19,7 +20,7 @@ public class CreateTestFileUtil implements HelpData {
                         String category = categories.get(RANDOM.nextInt(categories.size()));
                         for (int l = 0; l < 20; l++) {
                             String size = sizes.get(RANDOM.nextInt(sizes.size()));
-                            for (int m = 0; m < 1; m++) {
+                            for (int m = 0; m < COUNT_GOODS_IN_EVERY_SIZE; m++) {
                                 file.println(generateSql(i, type, category, size));
                             }
                         }
